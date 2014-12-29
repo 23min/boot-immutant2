@@ -16,10 +16,11 @@
 
    If no url path is specified the root one ('/') is used. Listens
    on port 3000 by default."
-  [h host     HOST     str  "The interface bind address"
-   p port     PORT     int  "The port to listen on."
-   t path     PATH     str  "Maps the handler to a prefix of the url path"
-   b block             bool "Blocking (for standalone use)"]
+  [n handler  HANDLER  sym   "Ring handler"
+   i host     HOST     str   "The interface bind address"
+   p port     PORT     int   "The port to listen on."
+   u path     PATH     str   "Maps the handler to a prefix of the url path"
+   b block             bool  "Blocking (for standalone use)"]
   (let [worker   (pod/make-pod (assoc-in (core/get-env) [:dependencies] deps))
         host     (or host "localhost")
         port     (or port 3000)
@@ -31,11 +32,10 @@
     (comp
      (core/with-pre-wrap fileset
        (pod/with-eval-in worker
-         (require '[immutant.web       :refer [run]]
-                  '[compojure.route    :refer [files]])
+         (require '[immutant.web :refer [run-dmc]])
          (def server
-           (run {:host ~host :port ~port :path ~path :join? false})))
-       (util/info "<< started Immutant2 on http://%s:%d%s >>\n" host port path)
+           (run-dmc handler {:host ~host :port ~port :path ~path})))
+       (util/info "<< started Immutant2 on http://%s:%d%s>>\n%s\n" host port path handler)
        fileset)
      (if block
        (task/wait)
