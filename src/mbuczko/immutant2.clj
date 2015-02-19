@@ -1,4 +1,4 @@
-(ns mbuczko.immutant2
+(ns 23min.immutant2
   {:boot/export-tasks true}
   (:require
    [boot.pod           :as pod]
@@ -7,11 +7,12 @@
    [boot.task.built-in :as task]))
 
 (def ^:private deps
-  '[[org.immutant/immutant "2.0.0-alpha2"]
-    [compojure "1.3.1"]])
+  '[[aleph     "0.4.0-beta2"]
+    ; [compojure "1.3.1"]]
+  )
 
 (core/deftask serve
-  "Start an immutant2 web server on given address, blocking
+  "Start an Aleph web server on given address, blocking
    the boot task pipeline by default.
 
    If no url path is specified the root one ('/') is used. Listens
@@ -27,15 +28,15 @@
         path     (or path "/")
         block    (or block false)]
     (core/cleanup
-     (util/info "\n<< stopping Immutant2... >>\n")
+     (util/info "\n<< stopping Aleph... >>\n")
      (pod/with-eval-in worker (.stop server)))
     (comp
      (core/with-pre-wrap fileset
        (pod/with-eval-in worker
-         (require '[immutant.web :refer [run-dmc]])
+         (require '[aleph.http :refer [start-server]])
          (def server
-           (run-dmc handler {:host ~host :port ~port :path ~path})))
-       (util/info "<< started Immutant2 on http://%s:%d%s>>\n%s\n" host port path handler)
+           (start-server handler {:host ~host :port ~port :path ~path})))
+       (util/info "<< started Aleph on http://%s:%d%s>>\n%s\n" host port path handler)
        fileset)
      (if block
        (task/wait)
